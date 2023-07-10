@@ -20,7 +20,8 @@ class _SerchPageState extends ConsumerState<SerchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('検索'),
+        title: Center(child: Text('検索条件')),
+        backgroundColor: Colors.green,
       ),
       body: Center(
         child: SizedBox(
@@ -52,7 +53,7 @@ class _SerchPageState extends ConsumerState<SerchPage> {
                           });
                         }),
                     Text('フィルター'),
-                    _serchTextField(ref)
+                    _searchTextField(ref)
                   ],
                 ),
               ),
@@ -63,32 +64,34 @@ class _SerchPageState extends ConsumerState<SerchPage> {
     );
   }
 
-  TextField _serchTextField(WidgetRef ref) {
-    final serchIndexListNotifier = ref.watch(serchIndexListProvider.notifier);
-    final List<int> serchIndexList = ref.watch(serchIndexListProvider);
+  TextField _searchTextField(WidgetRef ref) {
+    final searchIndexListNotifier = ref.watch(serchIndexListProvider.notifier);
+    final List<int> searchIndexList = ref.watch(serchIndexListProvider);
     final booksList = ref.watch(booksProvider);
+
+    List<Map<String, dynamic>> filteredBooks = [];
+
     return TextField(
       onChanged: (String text) {
         ref.read(keywordProvider.notifier).state = text;
         setState(() {
           keyword = text;
         });
-        serchIndexListNotifier.state = [];
+        searchIndexListNotifier.state = [];
         booksList.when(
           data: (books) {
-            // データが正常に取得された場合の処理
-            for (int i = 0; i < books.length; i++) {
-              if (books[i].containsKey(text)) {
-                serchIndexListNotifier.state.add(i);
-              }
-            }
+            filteredBooks = books
+                .where((element) => element['content'].contains(text))
+                .toList();
           },
           loading: () => CircularProgressIndicator(),
           error: (error, stackTrace) => Text('Error: $error'),
         );
       },
-      decoration:
-          InputDecoration(hintText: 'キーワード', border: OutlineInputBorder()),
+      decoration: InputDecoration(
+        hintText: 'キーワード',
+        border: OutlineInputBorder(),
+      ),
     );
   }
 }

@@ -85,8 +85,11 @@ class Home extends ConsumerWidget {
     final serchIndexListNotifier = ref.watch(serchIndexListProvider.notifier);
     final serchIndexList = ref.watch(serchIndexListProvider);
 
+    List<Map<String, dynamic>> filteredBooks = [];
+
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.green,
         centerTitle: false,
         title: Text('著者一覧'),
         actions: [
@@ -99,7 +102,18 @@ class Home extends ConsumerWidget {
           ),
         ],
       ),
-      body: keyword != '' ? _searchBooks(ref) : _allbooks(booksList),
+      body: keyword != ''
+          ? booksList.when(
+              data: (books) {
+                filteredBooks = books
+                    .where((element) => element['content'].contains(keyword))
+                    .toList();
+                return _searchBooks(ref, filteredBooks);
+              },
+              loading: () => CircularProgressIndicator(),
+              error: (error, stackTrace) => Text('Error: $error'),
+            )
+          : _allbooks(booksList),
     );
   }
 
@@ -134,25 +148,23 @@ class Home extends ConsumerWidget {
     );
   }
 
-  _searchBooks(WidgetRef ref) {
-    final searchIndexListNotifier = ref.watch(serchIndexListProvider.notifier);
-    final searchIndexList = ref.watch(serchIndexListProvider);
-
+  Widget _searchBooks(
+    WidgetRef ref,
+    List<Map<String, dynamic>> filteredBooks,
+  ) {
     return ListView.builder(
-      itemCount: searchIndexList.length,
+      itemCount: filteredBooks.length,
       itemBuilder: (context, int index) {
-        final int searchIndex = searchIndexListNotifier.state[index];
-        final bookData = searchIndexList[searchIndex];
-
+        Map<String, dynamic> bookData = filteredBooks[index];
         return Card(
           child: Column(
             children: [
               Text(
-                '${bookData}-${bookData}',
+                '${bookData['title']}-${bookData['author']}',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
               ),
               Text(
-                '${bookData}',
+                '${bookData['content']}',
                 style: TextStyle(fontSize: 20),
               ),
             ],

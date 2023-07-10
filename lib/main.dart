@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'books',
       theme: ThemeData(
-        primaryColor: Colors.blue,
+        primaryColor: Colors.green,
       ),
       home: Home(),
     );

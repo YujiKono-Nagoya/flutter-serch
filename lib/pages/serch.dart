@@ -18,9 +18,14 @@ class _SerchPageState extends ConsumerState<SerchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedValue = ref.watch(selectedValueProvider);
+    final keyword = ref.watch(keywordProvider);
+    ref.read(keywordProvider.notifier).state = keyword;
+
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text('検索条件')),
+        centerTitle: true,
+        title: Text('検索条件'),
         backgroundColor: Colors.green,
       ),
       body: Center(
@@ -38,8 +43,16 @@ class _SerchPageState extends ConsumerState<SerchPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    const SizedBox(
+                      height: 20,
+                    ),
                     Text('ジャンル'),
                     DropdownButton(
+                        icon: Icon(Icons.arrow_downward),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.green,
+                        ),
                         value: selectedValue,
                         items: genre
                             .map((String list) => DropdownMenuItem(
@@ -48,12 +61,15 @@ class _SerchPageState extends ConsumerState<SerchPage> {
                         onChanged: (String? value) async {
                           ref.read(selectedValueProvider.notifier).state =
                               value;
-                          setState(() {
-                            selectedValue = value!;
-                          });
                         }),
-                    Text('フィルター'),
-                    _searchTextField(ref)
+                    const SizedBox(height: 40),
+                    Text(
+                      'フィルター',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 30),
+                    _searchTextField(),
                   ],
                 ),
               ),
@@ -64,20 +80,19 @@ class _SerchPageState extends ConsumerState<SerchPage> {
     );
   }
 
-  TextField _searchTextField(WidgetRef ref) {
+  TextFormField _searchTextField() {
     final searchIndexListNotifier = ref.watch(serchIndexListProvider.notifier);
     final List<int> searchIndexList = ref.watch(serchIndexListProvider);
     final booksList = ref.watch(booksProvider);
+    TextEditingController _controller =
+        TextEditingController(text: ref.read(keywordProvider.notifier).state);
 
     List<Map<String, dynamic>> filteredBooks = [];
 
-    return TextField(
-      onChanged: (String text) {
+    return TextFormField(
+      controller: _controller,
+      onChanged: (String text) async {
         ref.read(keywordProvider.notifier).state = text;
-        setState(() {
-          keyword = text;
-        });
-        searchIndexListNotifier.state = [];
         booksList.when(
           data: (books) {
             filteredBooks = books

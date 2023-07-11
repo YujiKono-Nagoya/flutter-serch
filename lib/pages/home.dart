@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:js';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -91,7 +92,7 @@ class Home extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.green,
         centerTitle: false,
-        title: Text('著者一覧'),
+        title: Text('蔵書一覧'),
         actions: [
           IconButton(
             onPressed: () {
@@ -114,6 +115,10 @@ class Home extends ConsumerWidget {
               error: (error, stackTrace) => Text('Error: $error'),
             )
           : _allbooks(booksList),
+      floatingActionButton: FloatingActionButton(onPressed: () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => AddPage()));
+      }),
     );
   }
 
@@ -124,7 +129,8 @@ class Home extends ConsumerWidget {
         return ListView.builder(
           itemCount: books.length,
           itemBuilder: (context, index) {
-            Map<String, dynamic> bookData = books[index];
+            String jsonString = jsonEncode(books[index]);
+            Map<String, dynamic> bookData = jsonDecode(jsonString);
             // データの表示や処理を行うウィジェットを返す
             return Card(
               child: Column(
@@ -155,7 +161,8 @@ class Home extends ConsumerWidget {
     return ListView.builder(
       itemCount: filteredBooks.length,
       itemBuilder: (context, int index) {
-        Map<String, dynamic> bookData = filteredBooks[index];
+        String jsonString = jsonEncode(filteredBooks[index]);
+        Map<String, dynamic> bookData = jsonDecode(jsonString);
         return Card(
           child: Column(
             children: [
